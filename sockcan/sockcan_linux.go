@@ -1,7 +1,7 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 14:55:23
-// @ LastEditTime : 2023-09-09 10:19:59
+// @ LastEditTime : 2023-09-09 10:56:33
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
 // @ Description  : 
@@ -49,10 +49,15 @@ type Can struct {
 }
 
 func (c *Can) ReadFrame() (f can.Frame, err error) {
-	var b [can.FrameLength]byte
-	_, err = c.rwc.Read(b[:])
+	var b [can.CanFDFrameLength]byte
+	var n int
+	n, err = c.rwc.Read(b[:])
 	if err == nil {
-		f = can.NewFrame(b)
+		if n > can.CanFrameLength {
+			f = can.NewCanFDFrame(b)
+		} else {
+			f = can.NewCanFrame(([can.CanFrameLength]byte)(b[:]))
+		}
 	} else if err == io.EOF {
 		c.rwc.Close()
 	}
