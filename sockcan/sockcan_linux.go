@@ -1,7 +1,7 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 14:55:23
-// @ LastEditTime : 2023-09-07 14:12:38
+// @ LastEditTime : 2023-09-09 10:19:59
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
 // @ Description  : 
@@ -27,7 +27,16 @@ func NewCan() (*Can, error) {
 	if err == nil {
 		fd, _ := syscall.Socket(syscall.AF_CAN, syscall.SOCK_RAW, unix.CAN_RAW)
 		if err = unix.Bind(fd, &unix.SockaddrCAN{Ifindex: iface.Index}); err == nil {
-			return &Can{rwc: os.NewFile(uintptr(fd), flag.InterfaceName())}, nil
+			f := os.NewFile(uintptr(fd), flag.InterfaceName())
+			fun := func (fd uintptr) {
+				syscall.SetsockoptInt(int(fd), unix.SOL_CAN_RAW, unix.CAN_RAW_FD_FRAMES, 1)
+			}
+			var rawConn syscall.RawConn
+			if rawConn, err = f.SyscallConn(); err == nil {
+				if err = rawConn.Control(fun); err == nil {
+					return &Can{rwc: f}, nil
+				}
+			}
 		}
 	}
 	return nil, err

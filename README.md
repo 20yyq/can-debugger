@@ -17,3 +17,7 @@ golang network can bus
 	./candebugber vcan0 write -id 2047 -data string
 	./candebugber vcan0 write -id 2047 -data string
 	./candebugber vcan0 write -id 2047 -data string
+	
+	# fd
+	./candebugber vcan0 write -id 123 -data string -flags 16 -fd=true -ext=0
+	./candebugber vcan0 write -id 12345 -data string -flags 16 -fd=0 -ext=1

@@ -1,7 +1,7 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 15:25:10
-// @ LastEditTime : 2023-09-07 14:10:41
+// @ LastEditTime : 2023-09-09 10:22:36
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
 // @ Description  : 
@@ -48,28 +48,35 @@ const helpOutput = `
 
 var (
 	id			uint
+	flags		uint
 	data		string
-	ext			int
-	remote		int
+	ext			bool
+	remote		bool
+	fd			bool
 )
 
 func InitFlagArge(f *flag.FlagSet) {
 	f.UintVar(&id, "id", 0, "id usage uint")
+	f.UintVar(&flags, "flags", 0, "flags usage uint")
 	f.StringVar(&data, "data", "", "data usage string")
-	f.IntVar(&ext, "ext", 0, "ext usage int")
-	f.IntVar(&remote, "remote", 0, "remote usage int")
+	f.BoolVar(&ext, "ext", false, "ext usage bool")
+	f.BoolVar(&remote, "remote", false, "remote usage bool")
+	f.BoolVar(&fd, "fd", false, "fd usage bool")
 	f.Usage = help
 }
 
 func Run(c *sockcan.Can) {
-	var b [can.DataLength]byte
+	var b [can.CanFDDataLength]byte
 	l := len(data)
 	fmt.Println("Running...")
-	if l > can.DataLength {
-		l = can.DataLength
+	if l > can.CanFDDataLength {
+		l = can.CanFDDataLength
+	}
+	if !fd {
+		l = can.CanDataLength
 	}
 	copy(b[:], data[:l])
-	f := can.Frame{DLC: uint8(l), Extended: !(ext == 0), Remote: !(remote == 0), Data: b}
+	f := can.Frame{Len: uint8(l), CanFd: fd, Extended: ext, Remote: remote, Data: b, Flags: uint8(flags)}
 	err := f.SetID(uint32(id))
 	if err != nil {
 		fmt.Println("SetID err: ", err)
