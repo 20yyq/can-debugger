@@ -7,5 +7,5 @@ require (
 )
 
 require (
-	github.com/20yyq/packet v0.1.0 // indirect
+	github.com/20yyq/packet v0.1.2 // indirect
 )
