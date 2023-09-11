@@ -1,7 +1,7 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 15:25:10
-// @ LastEditTime : 2023-09-09 10:22:36
+// @ LastEditTime : 2023-09-11 08:12:35
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
 // @ Description  : 
@@ -72,7 +72,7 @@ func Run(c *sockcan.Can) {
 	if l > can.CanFDDataLength {
 		l = can.CanFDDataLength
 	}
-	if !fd {
+	if !fd && l > can.CanDataLength {
 		l = can.CanDataLength
 	}
 	copy(b[:], data[:l])
