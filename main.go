@@ -1,7 +1,7 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-02 11:02:03
-// @ LastEditTime : 2023-09-07 14:10:17
+// @ LastEditTime : 2023-09-11 16:55:46
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
 // @ Description  : 
@@ -27,8 +27,8 @@ func main() {
 		fmt.Println("can start err: ", err)
 		return
 	}
-	stop := make(chan struct{})
-	go listening(stop, can)
+	notify, stop := make(chan struct{}), make(chan struct{})
+	go listening(notify, stop, can)
 	switch flag.DebuggerName() {
 	case "read":
 		read.Run(can)
@@ -42,17 +42,18 @@ func main() {
 		fmt.Println("can start default")
 	}
 	close(stop)
+	<-notify
+	fmt.Println("End")
+	os.Exit(0)
 }
 
-func listening(stop chan struct{}, c *sockcan.Can) {
+func listening(notify chan struct{}, stop <-chan struct{}, c *sockcan.Can) {
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)
 	select{
 	case <-stop:
 	case <-quit:
-		close(stop)
 	}
 	c.Disconnect()
-	fmt.Println("End")
-	os.Exit(0)
+	close(notify)
 }
