@@ -21,3 +21,9 @@ golang network can bus
 	# fd
 	./candebugber vcan0 write -id 123 -data string -flags 16 -fd=true -ext=0
 	./candebugber vcan0 write -id 12345 -data string -flags 16 -fd=0 -ext=1
+	
+	# iface 设备开启关闭
+	./candebugber vcan0 iface -bitrate 1250000 -up=true
+	./candebugber vcan0 iface -up=F
+	# 直接关闭设备
+	./candebugber vcan0 iface

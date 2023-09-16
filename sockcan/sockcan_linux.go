@@ -1,7 +1,7 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 14:55:23
-// @ LastEditTime : 2023-09-09 10:56:33
+// @ LastEditTime : 2023-09-15 13:58:20
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
 // @ Description  : 
@@ -16,18 +16,17 @@ import (
 	"io"
 	"syscall"
 
-	"github.com/20yyq/can/flag"
 	"github.com/20yyq/packet/can"
 	
 	"golang.org/x/sys/unix"
 )
 
-func NewCan() (*Can, error) {
-	iface, err := net.InterfaceByName(flag.InterfaceName())
+func NewCan(dev string) (*Can, error) {
+	iface, err := net.InterfaceByName(dev)
 	if err == nil {
 		fd, _ := syscall.Socket(syscall.AF_CAN, syscall.SOCK_RAW, unix.CAN_RAW)
 		if err = unix.Bind(fd, &unix.SockaddrCAN{Ifindex: iface.Index}); err == nil {
-			f := os.NewFile(uintptr(fd), flag.InterfaceName())
+			f := os.NewFile(uintptr(fd), dev)
 			fun := func (fd uintptr) {
 				syscall.SetsockoptInt(int(fd), unix.SOL_CAN_RAW, unix.CAN_RAW_FD_FRAMES, 1)
 			}

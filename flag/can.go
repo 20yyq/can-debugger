@@ -1,7 +1,7 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 13:56:59
-// @ LastEditTime : 2023-09-07 14:11:10
+// @ LastEditTime : 2023-09-16 15:54:23
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
 // @ Description  : 
@@ -11,9 +11,15 @@
 package flag
 
 import (
+	"flag"
 	"fmt"
 	"os"
-	"flag"
+	"os/signal"
+
+	"github.com/20yyq/can/sockcan"
+	"github.com/20yyq/can/read"
+	"github.com/20yyq/can/write"
+	"github.com/20yyq/can/iface"
 )
 
 type FlagSetFunc func(*flag.FlagSet)
@@ -51,6 +57,10 @@ var (
 	canDebuggerName string
 )
 
+var (
+	runMap map[string]func() error
+)
+
 func init() {
 	if len(os.Args) < 3 {
 		if len(os.Args) > 0 && (os.Args[1] == "help" || os.Args[1] == "-h") {
@@ -61,18 +71,76 @@ func init() {
 		os.Exit(1)
 	}
 	canInterfaceName, canDebuggerName = os.Args[1], os.Args[2]
+	runMap = map[string]func() error {
+		"read" : readRuning,
+		"write" : writeRuning,
+		"iface" : ifaceRuning,
+	}
 }
 
-func Init(f FlagSetFunc) error {
+func Init() error {
 	fs := flag.NewFlagSet(canDebuggerName, flag.ContinueOnError)
-	f(fs)
+	switch canDebuggerName {
+	case "write":
+		write.InitFlagArge(fs)
+	case "iface":
+		iface.InitFlagArge(fs)
+	case "read":
+		fallthrough
+	case "":
+		return nil
+	default:
+		return fmt.Errorf("flag init '%s' not", canDebuggerName)
+	}
 	return fs.Parse(os.Args[3:])
 }
 
-func InterfaceName() string {
-	return canInterfaceName
+func Runing() error {
+	if f, ok := runMap[canDebuggerName]; ok && f != nil {
+		return f()
+	}
+	return fmt.Errorf("running '%s' not method", canDebuggerName)
 }
 
-func DebuggerName() string {
-	return canDebuggerName
+func ifaceRuning() error {
+	notify, stop := make(chan struct{}), make(chan struct{})
+	go listening(notify, stop)
+	err := iface.Run(canInterfaceName)
+	close(stop)
+	<-notify
+	return err
+}
+
+func readRuning() error {
+	return sockcanRuning(read.Run)
+}
+
+func writeRuning() error {
+	return sockcanRuning(write.Run)
+}
+
+func sockcanRuning(f func(*sockcan.Can)) error {
+	can, err := sockcan.NewCan(canInterfaceName)
+	if err == nil {
+		notify, stop := make(chan struct{}), make(chan struct{})
+		go func() {
+			listening(notify, stop)
+			can.Disconnect()
+		}()
+		go 
+		f(can)
+		close(stop)
+		<-notify
+	}
+	return err
+}
+
+func listening(notify chan struct{}, stop <-chan struct{}) {
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	select{
+	case <-stop:
+	case <-quit:
+	}
+	close(notify)
 }
