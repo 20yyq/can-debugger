@@ -1,7 +1,7 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 13:56:59
-// @ LastEditTime : 2023-09-16 15:54:23
+// @ LastEditTime : 2023-09-18 08:08:33
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
 // @ Description  : 
@@ -127,7 +127,6 @@ func sockcanRuning(f func(*sockcan.Can)) error {
 			listening(notify, stop)
 			can.Disconnect()
 		}()
-		go 
 		f(can)
 		close(stop)
 		<-notify

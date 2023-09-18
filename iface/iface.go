@@ -1,7 +1,7 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-15 14:37:58
-// @ LastEditTime : 2023-09-16 15:59:42
+// @ LastEditTime : 2023-09-18 17:21:35
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
 // @ Description  : 
@@ -19,6 +19,8 @@ import (
 
 	"github.com/20yyq/netlink"
 	"github.com/20yyq/packet"
+
+	"golang.org/x/sys/unix"
 )
 
 const helpOutput = `
@@ -60,7 +62,7 @@ type Interface struct {
 }
 
 func InitFlagArge(f *flag.FlagSet) {
-	f.UintVar(&bitrate, "bitrate", 1250000, "bitrate usage uint")
+	f.UintVar(&bitrate, "bitrate", 125000, "bitrate usage uint")
 	f.BoolVar(&up, "up", false, "up usage bool")
 	f.Usage = help
 }
@@ -73,7 +75,9 @@ func Run(dev string) error {
 			return iface.Down()
 		}
 		if err = iface.SetBitrate(); err == nil {
-			err = iface.Up()
+			if err = iface.Up(); err != nil {
+				err = iface.Up()
+			}
 		}
 		iface.conn.Close()
 	}
@@ -100,11 +104,13 @@ func (ifi *Interface) Up() error {
 	sm := netlink.SendNLMessage{
 		NlMsghdr: &packet.NlMsghdr{Type: syscall.RTM_NEWLINK, Flags: syscall.NLM_F_REQUEST|syscall.NLM_F_ACK, Seq: randReq()},
 	}
-	sm.Attrs = append(sm.Attrs, packet.IfInfomsg{Family: syscall.AF_UNSPEC, Flags: syscall.IFF_UP, Change: syscall.IFF_UP, Index: int32(ifi.iface.Index)})
-	rm := netlink.ReceiveNLMessage{Data: make([]byte, 128)}
+	sm.Attrs = append(sm.Attrs, packet.IfInfomsg{Flags: syscall.IFF_UP, Change: syscall.IFF_UP, Index: int32(ifi.iface.Index)})
+	rm := netlink.ReceiveNLMessage{Data: make([]byte, 1024)}
 	err := ifi.conn.Exchange(&sm, &rm)
 	if err == nil {
-		if err = DeserializeNlMsgerr(rm.MsgList[0]); err == nil {
+		if rm.MsgList[0].Header.Type != syscall.RTM_NEWLINK {
+			err = DeserializeNlMsgerr(rm.MsgList[0])
+		} else {
 			ifi.iface.Flags |= 0x01
 		}
 	}
@@ -118,11 +124,13 @@ func (ifi *Interface) Down() error {
 	sm := netlink.SendNLMessage{
 		NlMsghdr: &packet.NlMsghdr{Type: syscall.RTM_NEWLINK, Flags: syscall.NLM_F_REQUEST|syscall.NLM_F_ACK, Seq: randReq()},
 	}
-	sm.Attrs = append(sm.Attrs, packet.IfInfomsg{Family: syscall.AF_UNSPEC, Change: syscall.IFF_UP, Index: int32(ifi.iface.Index)})
-	rm := netlink.ReceiveNLMessage{Data: make([]byte, 128)}
+	sm.Attrs = append(sm.Attrs, packet.IfInfomsg{Change: syscall.IFF_UP, Index: int32(ifi.iface.Index)})
+	rm := netlink.ReceiveNLMessage{Data: make([]byte, 1024)}
 	err := ifi.conn.Exchange(&sm, &rm)
 	if err == nil {
-		if err = DeserializeNlMsgerr(rm.MsgList[0]); err == nil {
+		if rm.MsgList[0].Header.Type != syscall.RTM_NEWLINK {
+			err = DeserializeNlMsgerr(rm.MsgList[0])
+		} else {
 			ifi.iface.Flags &= 0xFFFFFFFE
 		}
 	}
@@ -133,13 +141,18 @@ func (ifi *Interface) SetBitrate() error {
 	sm := netlink.SendNLMessage{
 		NlMsghdr: &packet.NlMsghdr{Type: syscall.RTM_NEWLINK, Flags: syscall.NLM_F_REQUEST|syscall.NLM_F_ACK, Seq: randReq()},
 	}
-	sm.Attrs = append(sm.Attrs, packet.IfInfomsg{Family: syscall.AF_UNSPEC, Index: int32(ifi.iface.Index)})
-	timing := (packet.CANBitTiming{Bitrate: uint32(bitrate)}).WireFormat()
-	sm.Attrs = append(sm.Attrs, packet.NlAttr{&syscall.NlAttr{uint16(len(timing) + packet.SizeofNlAttr), syscall.IFLA_LINKINFO}, timing})
-	rm := netlink.ReceiveNLMessage{Data: make([]byte, 256)}
+	sm.Attrs = append(sm.Attrs, packet.IfInfomsg{Index: int32(ifi.iface.Index)})
+	load := packet.NlAttr{&syscall.NlAttr{uint16(4 + packet.SizeofNlAttr), unix.IFLA_INFO_KIND}, append([]byte("can"), 0x00)}.WireFormat()
+	data := (packet.CANBitTiming{Bitrate: uint32(bitrate)}).WireFormat()
+	data = packet.NlAttr{&syscall.NlAttr{uint16(len(data) + packet.SizeofNlAttr), unix.IFLA_CAN_BITTIMING}, data}.WireFormat()
+	load = append(load, packet.NlAttr{&syscall.NlAttr{uint16(len(data) + packet.SizeofNlAttr), unix.IFLA_INFO_DATA}, data}.WireFormat()...)
+	sm.Attrs = append(sm.Attrs, packet.NlAttr{&syscall.NlAttr{uint16(len(load) + packet.SizeofNlAttr), syscall.IFLA_LINKINFO}, load})
+	rm := netlink.ReceiveNLMessage{Data: make([]byte, 1024)}
 	err := ifi.conn.Exchange(&sm, &rm)
 	if err == nil {
-		err = DeserializeNlMsgerr(rm.MsgList[0])
+		if rm.MsgList[0].Header.Type != syscall.RTM_NEWLINK {
+			err = DeserializeNlMsgerr(rm.MsgList[0])
+		}
 	}
 	return err
 }
@@ -153,15 +166,14 @@ func randReq() uint32 {
 }
 
 func DeserializeNlMsgerr(nlm *packet.NetlinkMessage) error {
-	if len(nlm.Data) < packet.SizeofNlMsgerr {
-		return syscall.Errno(34)
-	}
-	msg := packet.NewNlMsgerr(([packet.SizeofNlMsgerr]byte)(nlm.Data[:packet.SizeofNlMsgerr]))
-	if msg.Error < 0 {
-		msg.Error *= -1
-	}
-	if msg.Error > 0 {
-		return syscall.Errno(msg.Error)
+	if len(nlm.Data) >= packet.SizeofNlMsgerr {
+		msg := packet.NewNlMsgerr(([packet.SizeofNlMsgerr]byte)(nlm.Data[:packet.SizeofNlMsgerr]))
+		if msg.Error < 0 {
+			msg.Error *= -1
+		}
+		if msg.Error > 0 {
+			return syscall.Errno(msg.Error)
+		}
 	}
 	return nil
 }

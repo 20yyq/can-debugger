@@ -1,6 +1,10 @@
 github.com/20yyq/netlink v0.0.0-20230916012726-081eed4e0df7 h1:BV96VUFCfQapg+VtuwE1ad6faX+Eu/744HwDqUwMp7I=
 github.com/20yyq/netlink v0.0.0-20230916012726-081eed4e0df7/go.mod h1:u8T5mH3H5NzpnVqRkevQxv3rGAWM7LdOADBj1IsXVF0=
+github.com/20yyq/netlink v0.0.0-20230918025521-70083e2f0988 h1:kdr9Xai/NbUHRPSdbaCzpNS5KVZJFtJYMg4mHeg0V4I=
+github.com/20yyq/netlink v0.0.0-20230918025521-70083e2f0988/go.mod h1:SqIdVGR/JmP1tDFgz298rpH83/XvdH1l3z9snrxqKnU=
 github.com/20yyq/packet v0.1.4-0.20230916072213-3666895fc50a h1:E97E1zN2lG3Z0gbxWySJVCmcTVcewsmbLCxz4To6x1U=
 github.com/20yyq/packet v0.1.4-0.20230916072213-3666895fc50a/go.mod h1:A4zhpIl5kFE5oP65EQi/IkTn3xqo3smzZ6yqiBaxl7I=
+github.com/20yyq/packet v0.1.4-0.20230918031534-3c30c2b2a78e h1:FntMuKeK9ka2ehXUa3riFo5nEY8N2epk61nc6j/G7LA=
+github.com/20yyq/packet v0.1.4-0.20230918031534-3c30c2b2a78e/go.mod h1:A4zhpIl5kFE5oP65EQi/IkTn3xqo3smzZ6yqiBaxl7I=
 golang.org/x/sys v0.12.0 h1:CM0HF96J0hcLAwsHPJZjfdNzs0gftsLfgKt57wWHJ0o=
 golang.org/x/sys v0.12.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
