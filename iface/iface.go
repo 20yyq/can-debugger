@@ -1,7 +1,7 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-15 14:37:58
-// @ LastEditTime : 2023-09-18 17:21:35
+// @ LastEditTime : 2023-09-19 08:12:30
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
 // @ Description  : 
@@ -54,6 +54,7 @@ const helpOutput = `
 var (
 	bitrate		uint
 	up			bool
+	types		string
 )
 
 type Interface struct {
@@ -63,6 +64,7 @@ type Interface struct {
 
 func InitFlagArge(f *flag.FlagSet) {
 	f.UintVar(&bitrate, "bitrate", 125000, "bitrate usage uint")
+	f.StringVar(&types, "type", "can", "type usage string")
 	f.BoolVar(&up, "up", false, "up usage bool")
 	f.Usage = help
 }
@@ -142,7 +144,7 @@ func (ifi *Interface) SetBitrate() error {
 		NlMsghdr: &packet.NlMsghdr{Type: syscall.RTM_NEWLINK, Flags: syscall.NLM_F_REQUEST|syscall.NLM_F_ACK, Seq: randReq()},
 	}
 	sm.Attrs = append(sm.Attrs, packet.IfInfomsg{Index: int32(ifi.iface.Index)})
-	load := packet.NlAttr{&syscall.NlAttr{uint16(4 + packet.SizeofNlAttr), unix.IFLA_INFO_KIND}, append([]byte("can"), 0x00)}.WireFormat()
+	load := packet.NlAttr{&syscall.NlAttr{uint16(len(types) + packet.SizeofNlAttr), unix.IFLA_INFO_KIND}, append([]byte(types), 0x00)}.WireFormat()
 	data := (packet.CANBitTiming{Bitrate: uint32(bitrate)}).WireFormat()
 	data = packet.NlAttr{&syscall.NlAttr{uint16(len(data) + packet.SizeofNlAttr), unix.IFLA_CAN_BITTIMING}, data}.WireFormat()
 	load = append(load, packet.NlAttr{&syscall.NlAttr{uint16(len(data) + packet.SizeofNlAttr), unix.IFLA_INFO_DATA}, data}.WireFormat()...)

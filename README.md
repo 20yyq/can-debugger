@@ -27,3 +27,6 @@ golang network can bus
 	./candebugber vcan0 iface -up=F
 	# 直接关闭设备
 	./candebugber vcan0 iface
+
+	# iface 虚拟CAN设备开启
+	./candebugber vcan0 iface -type vcan -bitrate 1250000 -up=true

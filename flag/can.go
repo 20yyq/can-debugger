@@ -1,7 +1,7 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 13:56:59
-// @ LastEditTime : 2023-09-18 08:08:33
+// @ LastEditTime : 2023-09-20 16:45:39
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
 // @ Description  : 
@@ -14,6 +14,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"syscall"
 	"os/signal"
 
 	"github.com/20yyq/can/sockcan"
@@ -136,7 +137,7 @@ func sockcanRuning(f func(*sockcan.Can)) error {
 
 func listening(notify chan struct{}, stop <-chan struct{}) {
 	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
 	select{
 	case <-stop:
 	case <-quit:

@@ -1,7 +1,7 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 14:55:23
-// @ LastEditTime : 2023-09-15 13:58:20
+// @ LastEditTime : 2023-09-20 15:44:40
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
 // @ Description  : 
@@ -26,6 +26,9 @@ func NewCan(dev string) (*Can, error) {
 	if err == nil {
 		fd, _ := syscall.Socket(syscall.AF_CAN, syscall.SOCK_RAW, unix.CAN_RAW)
 		if err = unix.Bind(fd, &unix.SockaddrCAN{Ifindex: iface.Index}); err == nil {
+			if err = syscall.SetNonblock(fd, true); err != nil {
+				return nil, err
+			}
 			f := os.NewFile(uintptr(fd), dev)
 			fun := func (fd uintptr) {
 				syscall.SetsockoptInt(int(fd), unix.SOL_CAN_RAW, unix.CAN_RAW_FD_FRAMES, 1)

@@ -1,7 +1,7 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 14:47:15
-// @ LastEditTime : 2023-09-07 14:10:35
+// @ LastEditTime : 2023-09-20 15:14:46
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
 // @ Description  : 
@@ -20,10 +20,12 @@ import (
 func Run(c *sockcan.Can) {
 	fmt.Println("Running...")
 	for {
-		if frame, err := c.ReadFrame(); err == nil {
+		frame, err := c.ReadFrame()
+		if err == nil {
 			go printFrame(frame)
 			continue
 		}
+		fmt.Println("ReadFrame err", err)
 		break
 	}
 }
