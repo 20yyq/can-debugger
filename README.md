@@ -23,10 +23,11 @@ golang network can bus
 	./candebugber vcan0 write -id 12345 -data string -flags 16 -fd=0 -ext=1
 	
 	# iface 设备开启关闭
-	./candebugber vcan0 iface -bitrate 1250000 -up=true
-	./candebugber vcan0 iface -up=F
+	./candebugber can0 iface -bitrate 125000 -up=true
+	./candebugber can0 iface -up=F
 	# 直接关闭设备
-	./candebugber vcan0 iface
+	./candebugber can0 iface
 
 	# iface 虚拟CAN设备开启
-	./candebugber vcan0 iface -type vcan -bitrate 1250000 -up=true
+	./candebugber vcan0 iface -type vcan -bitrate 125000 -up=true
+

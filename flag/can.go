@@ -1,10 +1,10 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 13:56:59
-// @ LastEditTime : 2023-09-20 16:45:39
+// @ LastEditTime : 2024-01-09 16:29:37
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
-// @ Description  : 
+// @ Description  :
 // @ --------------------------------------------------------------------------------<
 // @ FilePath     : /20yyq/can-debugger/flag/can.go
 // @@
@@ -14,13 +14,13 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"syscall"
 	"os/signal"
+	"syscall"
 
-	"github.com/20yyq/can/sockcan"
-	"github.com/20yyq/can/read"
-	"github.com/20yyq/can/write"
-	"github.com/20yyq/can/iface"
+	"github.com/20yyq/can-debugger/iface"
+	"github.com/20yyq/can-debugger/read"
+	"github.com/20yyq/can-debugger/sockcan"
+	"github.com/20yyq/can-debugger/write"
 )
 
 type FlagSetFunc func(*flag.FlagSet)
@@ -55,7 +55,7 @@ const helpOutput = `
 
 var (
 	canInterfaceName string
-	canDebuggerName string
+	canDebuggerName  string
 )
 
 var (
@@ -72,10 +72,10 @@ func init() {
 		os.Exit(1)
 	}
 	canInterfaceName, canDebuggerName = os.Args[1], os.Args[2]
-	runMap = map[string]func() error {
-		"read" : readRuning,
-		"write" : writeRuning,
-		"iface" : ifaceRuning,
+	runMap = map[string]func() error{
+		"read":  readRuning,
+		"write": writeRuning,
+		"iface": ifaceRuning,
 	}
 }
 
@@ -138,7 +138,7 @@ func sockcanRuning(f func(*sockcan.Can)) error {
 func listening(notify chan struct{}, stop <-chan struct{}) {
 	quit := make(chan os.Signal)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
-	select{
+	select {
 	case <-stop:
 	case <-quit:
 	}

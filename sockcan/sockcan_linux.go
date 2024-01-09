@@ -1,23 +1,23 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 14:55:23
-// @ LastEditTime : 2023-09-20 15:44:40
+// @ LastEditTime : 2024-01-02 09:17:49
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
-// @ Description  : 
+// @ Description  :
 // @ --------------------------------------------------------------------------------<
 // @ FilePath     : /20yyq/can-debugger/sockcan/sockcan_linux.go
 // @@
 package sockcan
 
 import (
+	"io"
 	"net"
 	"os"
-	"io"
 	"syscall"
 
 	"github.com/20yyq/packet/can"
-	
+
 	"golang.org/x/sys/unix"
 )
 
@@ -30,7 +30,7 @@ func NewCan(dev string) (*Can, error) {
 				return nil, err
 			}
 			f := os.NewFile(uintptr(fd), dev)
-			fun := func (fd uintptr) {
+			fun := func(fd uintptr) {
 				syscall.SetsockoptInt(int(fd), unix.SOL_CAN_RAW, unix.CAN_RAW_FD_FRAMES, 1)
 			}
 			var rawConn syscall.RawConn
@@ -47,7 +47,7 @@ func NewCan(dev string) (*Can, error) {
 type HandlerFunc func(can.Frame)
 
 type Can struct {
-	rwc 	io.ReadWriteCloser
+	rwc io.ReadWriteCloser
 }
 
 func (c *Can) ReadFrame() (f can.Frame, err error) {

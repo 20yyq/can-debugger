@@ -1,20 +1,20 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-02 11:02:03
-// @ LastEditTime : 2023-09-16 16:00:19
+// @ LastEditTime : 2024-01-09 16:29:24
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
-// @ Description  : 
+// @ Description  :
 // @ --------------------------------------------------------------------------------<
 // @ FilePath     : /20yyq/can-debugger/main.go
 // @@
 package main
 
 import (
-	"os"
 	"fmt"
+	"os"
 
-	"github.com/20yyq/can/flag"
+	"github.com/20yyq/can-debugger/flag"
 )
 
 func main() {

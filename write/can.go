@@ -1,20 +1,20 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 15:25:10
-// @ LastEditTime : 2023-09-11 08:12:35
+// @ LastEditTime : 2024-01-09 16:29:12
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
-// @ Description  : 
+// @ Description  :
 // @ --------------------------------------------------------------------------------<
 // @ FilePath     : /20yyq/can-debugger/write/can.go
 // @@
 package write
 
 import (
-	"fmt"
 	"flag"
-	
-	"github.com/20yyq/can/sockcan"
+	"fmt"
+
+	"github.com/20yyq/can-debugger/sockcan"
 	"github.com/20yyq/packet/can"
 )
 
@@ -47,12 +47,12 @@ const helpOutput = `
 `
 
 var (
-	id			uint
-	flags		uint
-	data		string
-	ext			bool
-	remote		bool
-	fd			bool
+	id     uint
+	flags  uint
+	data   string
+	ext    bool
+	remote bool
+	fd     bool
 )
 
 func InitFlagArge(f *flag.FlagSet) {

@@ -1,8 +1,8 @@
-module github.com/20yyq/can
+module github.com/20yyq/can-debugger
 
 go 1.20
 
-require golang.org/x/sys v0.12.0
+require golang.org/x/sys v0.13.0
 
 require (
 	github.com/20yyq/netlink v0.0.0-20230920054343-ca8d8bc8ad3d

@@ -1,10 +1,10 @@
 // @@
 // @ Author       : Eacher
 // @ Date         : 2023-09-06 14:47:15
-// @ LastEditTime : 2023-09-20 15:14:46
+// @ LastEditTime : 2024-01-09 16:29:16
 // @ LastEditors  : Eacher
 // @ --------------------------------------------------------------------------------<
-// @ Description  : 
+// @ Description  :
 // @ --------------------------------------------------------------------------------<
 // @ FilePath     : /20yyq/can-debugger/read/can.go
 // @@
@@ -12,8 +12,8 @@ package read
 
 import (
 	"fmt"
-	
-	"github.com/20yyq/can/sockcan"
+
+	"github.com/20yyq/can-debugger/sockcan"
 	"github.com/20yyq/packet/can"
 )
 
